@@ -1,5 +1,7 @@
 # LILA Map Viz
 
+**Live tool:** https://lila-map-viz.vercel.app
+
 A web-based player behavior visualization tool for LILA BLACK — an extraction shooter by LILA Games.
 
 Built for Level Designers to explore 5 days of production gameplay data across 3 maps: player journeys, kill zones, loot patterns, and storm deaths.

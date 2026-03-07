@@ -5,3 +5,4 @@ dist/
 .vercel/
 pipeline/__pycache__/
 pipeline/*.pyc
+.vercel
