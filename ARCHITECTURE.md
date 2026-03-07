@@ -1,8 +1,10 @@
-# Architecture — LILA Map Viz
+# Architecture — Telemetry Analytics Dashboard
 
 ## Overview
 
 A fully static web application for visualizing LILA BLACK gameplay telemetry. No backend server. Raw parquet data is pre-processed offline into JSON assets that the React frontend fetches directly from Vercel's CDN.
+
+**Repository:** `telemetry-analytics-dashboard`
 
 ---
 
@@ -17,6 +19,19 @@ A fully static web application for visualizing LILA BLACK gameplay telemetry. No
 **Why Vite?** Fast HMR for development iteration and a small production bundle (52 KB gzipped for the entire app, including React).
 
 **Why not Streamlit/Plotly Dash?** These are excellent for exploratory data analysis but feel distinctly "data scientist" in UX. Level Designers need quick spatial reasoning — smooth animation, intuitive controls, a game-like aesthetic. Building that in Streamlit would fight the framework the entire way.
+
+### Source Structure
+
+```
+src/
+  views/          Root-level page views (DashboardView.tsx)
+  components/
+    charts/       Canvas-based data visualizations (PlayerMovementMap.tsx)
+    *.tsx         UI control components (filters, timeline, legend)
+  hooks/          React hooks for data fetching and playback logic
+  types/          Shared TypeScript type definitions
+  constants/      Map configuration, color palettes, event metadata
+```
 
 ### HTML5 Canvas for rendering
 

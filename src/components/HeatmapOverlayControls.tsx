@@ -1,85 +1,85 @@
 import type { HeatmapMode, EventType } from '../types';
-import { HEATMAP_MODES, NON_MOVEMENT_EVENTS, EVENT_COLORS, EVENT_LABELS } from '../constants';
+import { HEATMAP_OVERLAY_MODES, DISCRETE_EVENT_TYPES, EVENT_MARKER_COLORS, EVENT_TYPE_LABELS } from '../constants';
 
-interface Props {
+interface HeatmapOverlayControlsProps {
   heatmapMode: HeatmapMode | null;
   showBots: boolean;
   visibleEventTypes: Set<EventType>;
-  onHeatmapChange: (m: HeatmapMode | null) => void;
-  onShowBotsChange: (v: boolean) => void;
-  onEventTypeToggle: (t: EventType) => void;
+  onHeatmapModeChange: (mode: HeatmapMode | null) => void;
+  onShowBotsChange: (show: boolean) => void;
+  onEventTypeToggle: (eventType: EventType) => void;
 }
 
-export function HeatmapControls({
+export function HeatmapOverlayControls({
   heatmapMode,
   showBots,
   visibleEventTypes,
-  onHeatmapChange,
+  onHeatmapModeChange,
   onShowBotsChange,
   onEventTypeToggle,
-}: Props) {
+}: HeatmapOverlayControlsProps) {
   return (
     <div style={styles.container}>
-      {/* Heatmap */}
+      {/* Heatmap mode selector */}
       <div style={styles.section}>
-        <span style={styles.label}>HEATMAP</span>
-        <div style={styles.row}>
+        <span style={styles.sectionLabel}>HEATMAP</span>
+        <div style={styles.buttonRow}>
           <button
-            style={{ ...styles.heatBtn, ...(heatmapMode === null ? styles.heatBtnOff : {}) }}
-            onClick={() => onHeatmapChange(null)}
+            style={{ ...styles.modeButton, ...(heatmapMode === null ? styles.modeButtonSelected : {}) }}
+            onClick={() => onHeatmapModeChange(null)}
           >
             Off
           </button>
-          {HEATMAP_MODES.map(m => (
+          {HEATMAP_OVERLAY_MODES.map(mode => (
             <button
-              key={m.id}
-              style={{ ...styles.heatBtn, ...(heatmapMode === m.id ? styles.heatBtnActive : {}) }}
-              onClick={() => onHeatmapChange(m.id)}
+              key={mode.id}
+              style={{ ...styles.modeButton, ...(heatmapMode === mode.id ? styles.modeButtonActive : {}) }}
+              onClick={() => onHeatmapModeChange(mode.id)}
             >
-              {m.label}
+              {mode.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Divider */}
       <div style={styles.divider} />
 
-      {/* Event markers */}
+      {/* Event marker visibility toggles */}
       <div style={styles.section}>
-        <span style={styles.label}>EVENT MARKERS</span>
-        <div style={styles.eventGrid}>
-          {NON_MOVEMENT_EVENTS.map(type => (
+        <span style={styles.sectionLabel}>EVENT MARKERS</span>
+        <div style={styles.eventTypeList}>
+          {DISCRETE_EVENT_TYPES.map(eventType => (
             <button
-              key={type}
+              key={eventType}
               style={{
-                ...styles.eventBtn,
-                ...(visibleEventTypes.has(type) ? { borderColor: EVENT_COLORS[type], opacity: 1 } : { opacity: 0.35 }),
+                ...styles.eventTypeButton,
+                ...(visibleEventTypes.has(eventType)
+                  ? { borderColor: EVENT_MARKER_COLORS[eventType], opacity: 1 }
+                  : { opacity: 0.35 }),
               }}
-              onClick={() => onEventTypeToggle(type)}
-              title={EVENT_LABELS[type]}
+              onClick={() => onEventTypeToggle(eventType)}
+              title={EVENT_TYPE_LABELS[eventType]}
             >
-              <span style={{ ...styles.dot, background: EVENT_COLORS[type] }} />
-              <span style={styles.eventLabel}>{EVENT_LABELS[type]}</span>
+              <span style={{ ...styles.colorDot, background: EVENT_MARKER_COLORS[eventType] }} />
+              <span style={styles.eventTypeLabel}>{EVENT_TYPE_LABELS[eventType]}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Divider */}
       <div style={styles.divider} />
 
-      {/* Show bots toggle */}
+      {/* Bot visibility toggle */}
       <div style={styles.section}>
-        <label style={styles.toggle}>
+        <label style={styles.checkboxLabel}>
           <input
             type="checkbox"
             checked={showBots}
             onChange={e => onShowBotsChange(e.target.checked)}
             style={{ accentColor: '#ffa726' }}
           />
-          <span style={styles.toggleLabel}>Show Bots</span>
-          <span style={styles.botBadge}>dashed orange</span>
+          <span style={styles.checkboxText}>Show Bots</span>
+          <span style={styles.botStyleHint}>dashed orange</span>
         </label>
       </div>
     </div>
@@ -97,23 +97,23 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'auto',
   },
   section: {
-    padding: '14px 14px',
+    padding: '14px',
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
   },
-  label: {
+  sectionLabel: {
     fontSize: '10px',
     fontWeight: 700,
     letterSpacing: '0.12em',
     color: '#6b7280',
   },
-  row: {
+  buttonRow: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: '4px',
   },
-  heatBtn: {
+  modeButton: {
     background: '#1a1f2e',
     border: '1px solid #252a3a',
     borderRadius: '5px',
@@ -122,12 +122,12 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '5px 8px',
     cursor: 'pointer',
   },
-  heatBtnActive: {
+  modeButtonActive: {
     background: '#1a2a1a',
     borderColor: '#66bb6a',
     color: '#66bb6a',
   },
-  heatBtnOff: {
+  modeButtonSelected: {
     background: '#0d2a40',
     borderColor: '#4fc3f7',
     color: '#4fc3f7',
@@ -137,12 +137,12 @@ const styles: Record<string, React.CSSProperties> = {
     background: '#1e2330',
     margin: '0 14px',
   },
-  eventGrid: {
+  eventTypeList: {
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
   },
-  eventBtn: {
+  eventTypeButton: {
     background: '#1a1f2e',
     border: '1px solid #252a3a',
     borderRadius: '5px',
@@ -155,16 +155,16 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '6px',
     textAlign: 'left',
   },
-  dot: {
+  colorDot: {
     width: '8px',
     height: '8px',
     borderRadius: '50%',
     flexShrink: 0,
   },
-  eventLabel: {
+  eventTypeLabel: {
     flex: 1,
   },
-  toggle: {
+  checkboxLabel: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
@@ -172,10 +172,10 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '12px',
     color: '#e8eaf0',
   },
-  toggleLabel: {
+  checkboxText: {
     fontWeight: 600,
   },
-  botBadge: {
+  botStyleHint: {
     fontSize: '10px',
     color: '#ffa726',
     opacity: 0.8,

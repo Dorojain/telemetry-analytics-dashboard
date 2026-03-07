@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """
-LILA Map Viz — Data Pipeline
-Reads all .nakama-0 parquet files from player_data/ and outputs JSON assets
-to public/data/ for the React frontend.
+Telemetry Analytics Dashboard — Data Pipeline
+
+Reads all .nakama-0 parquet files from player_data/ and outputs pre-processed
+JSON assets to public/data/ for the React frontend to serve as static files.
 
 Output files:
-  public/data/index.json         — match metadata list
+  public/data/index.json          — match metadata list (all maps)
   public/data/ambrose_valley.json — full event data for AmbroseValley
-  public/data/grand_rift.json    — full event data for GrandRift
-  public/data/lockdown.json      — full event data for Lockdown
+  public/data/grand_rift.json     — full event data for GrandRift
+  public/data/lockdown.json       — full event data for Lockdown
+
+Re-run this script whenever new parquet data is added to player_data/.
 """
 
 import os
@@ -137,7 +140,7 @@ def main():
                 try:
                     px, py = world_to_pixel(float(row["x"]), float(row["z"]), map_id)
                     events.append({
-                        "ts": int(row["ts_ms"]),
+                        "eventTimestampMs": int(row["ts_ms"]),
                         "px": px,
                         "py": py,
                         "type": row["event"],
@@ -153,29 +156,29 @@ def main():
                 map_data[map_id][match_id_clean] = {}
 
             map_data[map_id][match_id_clean][user_id] = {
-                "user_id": user_id,
-                "is_bot": not human,
+                "userId": user_id,
+                "isBot": not human,
                 "events": events,
             }
 
             # Update match metadata
             if match_id_clean not in match_meta:
                 match_meta[match_id_clean] = {
-                    "match_id": match_id_clean,
-                    "map_id": map_id,
+                    "matchId": match_id_clean,
+                    "mapId": map_id,
                     "date": date_label,
-                    "human_count": 0,
-                    "bot_count": 0,
-                    "duration_ms": 0,
+                    "humanPlayerCount": 0,
+                    "botCount": 0,
+                    "durationMs": 0,
                 }
             meta = match_meta[match_id_clean]
             if human:
-                meta["human_count"] += 1
+                meta["humanPlayerCount"] += 1
             else:
-                meta["bot_count"] += 1
-            duration = max(e["ts"] for e in events)
-            if duration > meta["duration_ms"]:
-                meta["duration_ms"] = duration
+                meta["botCount"] += 1
+            duration = max(e["eventTimestampMs"] for e in events)
+            if duration > meta["durationMs"]:
+                meta["durationMs"] = duration
 
             total_files += 1
             total_events += len(events)

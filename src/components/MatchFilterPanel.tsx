@@ -1,106 +1,111 @@
-import type { MapId, MatchMeta } from '../types';
+import type { MapId, MatchMetadata } from '../types';
 import { MAP_IDS, MAP_CONFIG } from '../constants';
 
-interface Props {
-  allMatches: MatchMeta[];
+interface MatchFilterPanelProps {
+  allMatchMetadata: MatchMetadata[];
   selectedMap: MapId;
   selectedDate: string;
   selectedMatchId: string;
-  onMapChange: (m: MapId) => void;
-  onDateChange: (d: string) => void;
-  onMatchChange: (id: string) => void;
+  onMapChange: (mapId: MapId) => void;
+  onDateChange: (date: string) => void;
+  onMatchChange: (matchId: string) => void;
 }
 
-export function FilterPanel({
-  allMatches,
+export function MatchFilterPanel({
+  allMatchMetadata,
   selectedMap,
   selectedDate,
   selectedMatchId,
   onMapChange,
   onDateChange,
   onMatchChange,
-}: Props) {
-  const mapMatches = allMatches.filter(m => m.map_id === selectedMap);
-  const dates = Array.from(new Set(mapMatches.map(m => m.date))).sort();
-  const dateMatches = selectedDate === 'all'
-    ? mapMatches
-    : mapMatches.filter(m => m.date === selectedDate);
+}: MatchFilterPanelProps) {
+  const matchesOnSelectedMap = allMatchMetadata.filter(m => m.mapId === selectedMap);
+  const availableDates = Array.from(new Set(matchesOnSelectedMap.map(m => m.date))).sort();
+  const matchesForSelectedDate = selectedDate === 'all'
+    ? matchesOnSelectedMap
+    : matchesOnSelectedMap.filter(m => m.date === selectedDate);
 
   return (
     <div style={styles.panel}>
       <div style={styles.header}>
         <span style={styles.logo}>⬡</span>
-        <span style={styles.title}>LILA Map Viz</span>
+        <span style={styles.title}>Telemetry Dashboard</span>
       </div>
 
+      {/* Map selector */}
       <section style={styles.section}>
-        <label style={styles.label}>MAP</label>
-        <div style={styles.mapGrid}>
-          {MAP_IDS.map(id => (
+        <label style={styles.sectionLabel}>MAP</label>
+        <div style={styles.mapButtonGrid}>
+          {MAP_IDS.map(mapId => (
             <button
-              key={id}
-              style={{ ...styles.mapBtn, ...(selectedMap === id ? styles.mapBtnActive : {}) }}
-              onClick={() => onMapChange(id)}
+              key={mapId}
+              style={{ ...styles.mapButton, ...(selectedMap === mapId ? styles.mapButtonActive : {}) }}
+              onClick={() => onMapChange(mapId)}
             >
-              <span style={styles.mapName}>{MAP_CONFIG[id].label}</span>
-              <span style={styles.mapCount}>{allMatches.filter(m => m.map_id === id).length} matches</span>
+              <span style={styles.mapName}>{MAP_CONFIG[mapId].label}</span>
+              <span style={styles.matchCount}>
+                {allMatchMetadata.filter(m => m.mapId === mapId).length} matches
+              </span>
             </button>
           ))}
         </div>
       </section>
 
+      {/* Date selector */}
       <section style={styles.section}>
-        <label style={styles.label}>DATE</label>
+        <label style={styles.sectionLabel}>DATE</label>
         <select
           style={styles.select}
           value={selectedDate}
           onChange={e => {
             onDateChange(e.target.value);
-            onMatchChange('');
+            onMatchChange(''); // Clear match selection when date changes
           }}
         >
-          <option value="all">All dates ({mapMatches.length} matches)</option>
-          {dates.map(d => (
-            <option key={d} value={d}>
-              {formatDate(d)} ({mapMatches.filter(m => m.date === d).length} matches)
+          <option value="all">All dates ({matchesOnSelectedMap.length} matches)</option>
+          {availableDates.map(date => (
+            <option key={date} value={date}>
+              {formatDateLabel(date)} ({matchesOnSelectedMap.filter(m => m.date === date).length} matches)
             </option>
           ))}
         </select>
       </section>
 
+      {/* Match selector */}
       <section style={styles.section}>
-        <label style={styles.label}>MATCH</label>
+        <label style={styles.sectionLabel}>MATCH</label>
         <select
           style={styles.select}
           value={selectedMatchId}
           onChange={e => onMatchChange(e.target.value)}
         >
           <option value="">— Select a match —</option>
-          {dateMatches.map(m => (
-            <option key={m.match_id} value={m.match_id}>
-              {m.match_id.slice(0, 8)}… · {m.human_count}H {m.bot_count}B · {formatDuration(m.duration_ms)}
+          {matchesForSelectedDate.map(match => (
+            <option key={match.matchId} value={match.matchId}>
+              {match.matchId.slice(0, 8)}… · {match.humanPlayerCount}H {match.botCount}B · {formatMatchDuration(match.durationMs)}
             </option>
           ))}
         </select>
       </section>
 
-      {dateMatches.length === 0 && (
-        <p style={styles.empty}>No matches found for this filter.</p>
+      {matchesForSelectedDate.length === 0 && (
+        <p style={styles.emptyMessage}>No matches found for this filter.</p>
       )}
     </div>
   );
 }
 
-function formatDate(d: string) {
-  const date = new Date(d + 'T00:00:00');
+function formatDateLabel(isoDate: string) {
+  const date = new Date(isoDate + 'T00:00:00');
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function formatDuration(ms: number) {
-  const s = Math.round(ms / 1000);
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${String(sec).padStart(2, '0')}`;
+function formatMatchDuration(durationMs: number) {
+  const totalSeconds = Math.round(durationMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -138,18 +143,18 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     gap: '8px',
   },
-  label: {
+  sectionLabel: {
     fontSize: '10px',
     fontWeight: 700,
     letterSpacing: '0.12em',
     color: '#6b7280',
   },
-  mapGrid: {
+  mapButtonGrid: {
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
   },
-  mapBtn: {
+  mapButton: {
     background: '#1a1f2e',
     border: '1px solid #252a3a',
     borderRadius: '6px',
@@ -161,7 +166,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#9ca3af',
     transition: 'all 0.1s',
   },
-  mapBtnActive: {
+  mapButtonActive: {
     background: '#0d2a40',
     borderColor: '#4fc3f7',
     color: '#e8eaf0',
@@ -170,7 +175,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '13px',
     fontWeight: 600,
   },
-  mapCount: {
+  matchCount: {
     fontSize: '11px',
     opacity: 0.6,
   },
@@ -185,7 +190,7 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     outline: 'none',
   },
-  empty: {
+  emptyMessage: {
     padding: '12px 16px',
     fontSize: '12px',
     color: '#6b7280',

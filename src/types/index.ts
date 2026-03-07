@@ -11,15 +11,18 @@ export type EventType =
   | 'Loot';
 
 export interface PlayerEvent {
-  ts: number;   // ms from match start
-  px: number;   // minimap pixel x (0-1024)
-  py: number;   // minimap pixel y (0-1024)
+  /** Milliseconds elapsed from match start when this event occurred */
+  eventTimestampMs: number;
+  /** Minimap pixel X coordinate (0–1024 space) */
+  px: number;
+  /** Minimap pixel Y coordinate (0–1024 space, Y-axis flipped from world Z) */
+  py: number;
   type: EventType;
 }
 
 export interface Player {
-  user_id: string;
-  is_bot: boolean;
+  userId: string;
+  isBot: boolean;
   events: PlayerEvent[];
 }
 
@@ -27,20 +30,20 @@ export interface MatchData {
   players: Player[];
 }
 
-// map_id → match_id → MatchData
+/** Keyed by match_id → MatchData for all matches on one map */
 export type MapMatchData = Record<string, MatchData>;
 
-export interface MatchMeta {
-  match_id: string;
-  map_id: MapId;
+export interface MatchMetadata {
+  matchId: string;
+  mapId: MapId;
   date: string;
-  human_count: number;
-  bot_count: number;
-  duration_ms: number;
+  humanPlayerCount: number;
+  botCount: number;
+  durationMs: number;
 }
 
 export interface MatchIndex {
-  matches: MatchMeta[];
+  matches: MatchMetadata[];
 }
 
 export type HeatmapMode = 'kills' | 'deaths' | 'traffic';
