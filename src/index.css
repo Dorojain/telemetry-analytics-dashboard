@@ -1,0 +1,12 @@
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #13161f; }
+::-webkit-scrollbar-thumb { background: #252a3a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #374151; }
+
+select option { background: #1a1f2e; color: #e8eaf0; }
